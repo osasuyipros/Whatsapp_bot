@@ -1,0 +1,11 @@
+# Navigate to your project folder
+cd path/to/telegram-login-approval
+
+# Initialize Node.js
+npm init -y
+
+# Install dependencies
+npm install express body-parser axios
+
+# Run your server
+node server.js
